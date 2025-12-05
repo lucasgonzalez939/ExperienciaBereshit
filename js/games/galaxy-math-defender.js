@@ -231,6 +231,8 @@ class GalaxyMathDefender {
 
     startWave() {
         this.currentProblem = this.generateProblem();
+        // Reset flag — no correct answer spawned yet for the new problem
+        this.hasCorrectAnswer = false;
         this.spawnEnemiesForProblem(this.currentProblem);
     }
 
@@ -247,8 +249,17 @@ class GalaxyMathDefender {
         // Determine how many enemies to spawn (1-2 at a time for slower pace)
         const spawnCount = Math.min(Math.random() < 0.7 ? 1 : 2, canSpawn);
         
+        // Determine if there is already a correct answer active
+        const existingHasCorrect = this.enemies.some(e => e.isCorrect && !e.dead && !e.deadMissed);
+        let spawnedCorrectThisBatch = false;
+
         for (let spawn = 0; spawn < spawnCount; spawn++) {
-            const isCorrect = Math.random() < 0.4; // 40% chance of spawning the correct answer
+            // 40% chance of spawning the correct answer, but guarantee at least one correct if none exist
+            let isCorrect = Math.random() < 0.4;
+            if (!existingHasCorrect && !spawnedCorrectThisBatch && spawn === spawnCount - 1) {
+                // Force a correct answer on the last spawn if none will be present
+                isCorrect = true;
+            }
             const lane = this.randomBetween(0, this.lanes - 1);
             
             if (isCorrect) {
@@ -258,6 +269,8 @@ class GalaxyMathDefender {
                     value: problem.answer,
                     isCorrect: true
                 });
+                spawnedCorrectThisBatch = true;
+                this.hasCorrectAnswer = true;
             } else {
                 // Generate distractor
                 const usedValues = new Set([problem.answer]);
@@ -323,9 +336,15 @@ class GalaxyMathDefender {
         if (q && this.currentProblem) q.textContent = `${this.currentProblem.text} = ?`;
         if (s) s.textContent = `Puntos: ${this.score}`;
         if (l) {
-            const hearts = '❤️'.repeat(this.lives);
-            const emptyHearts = '🖤'.repeat(Math.max(0, 3 - this.lives));
-            l.textContent = hearts + emptyHearts;
+            // Hide lives for grades 1-2 (unlimited attempts)
+            if (this.grade <= 2) {
+                l.style.display = 'none';
+            } else {
+                l.style.display = 'block';
+                const hearts = '❤️'.repeat(this.lives);
+                const emptyHearts = '🖤'.repeat(Math.max(0, 3 - this.lives));
+                l.textContent = hearts + emptyHearts;
+            }
         }
         if (scoreDisplay) scoreDisplay.textContent = this.score;
     }
@@ -451,7 +470,9 @@ class GalaxyMathDefender {
         this.transitionDelay = 1.5;
         
         // Prepare next problem
-        this.nextProblem = this.generateProblem();
+    // Reset flag so the next problem will guarantee a correct spawn
+    this.hasCorrectAnswer = false;
+    this.nextProblem = this.generateProblem();
         
         this.updateHud();
     }
@@ -459,26 +480,37 @@ class GalaxyMathDefender {
     handleWrongHit() {
         this.playSound('wrong');
         this.triggerFlash('wrong');
-        this.lives = Math.max(0, this.lives - 1);
-        if (this.lives === 0) {
-            this.gameOver();
+        // Only lose lives in grade 3+, grades 1-2 have unlimited attempts
+        if (this.grade > 2) {
+            this.lives = Math.max(0, this.lives - 1);
+            if (this.lives === 0) {
+                this.gameOver();
+            }
         }
         this.updateHud();
     }
 
     handleMissedCorrect() {
         this.triggerFlash('wrong');
-        this.lives = Math.max(0, this.lives - 1);
-        if (this.lives === 0) {
-            this.gameOver();
-        } else {
-            this.wave++;
-            this.startWave();
+        // Only lose lives in grade 3+, grades 1-2 have unlimited attempts
+        if (this.grade > 2) {
+            this.lives = Math.max(0, this.lives - 1);
+            if (this.lives === 0) {
+                this.gameOver();
+                return;
+            }
         }
+        
+        // Move to next wave/problem without calling startWave
+        this.wave++;
+        this.waveTransitioning = true;
+        this.transitionDelay = 1.5;
+        // Reset flag so the next problem will guarantee a correct spawn
+        this.hasCorrectAnswer = false;
+        this.nextProblem = this.generateProblem();
+        
         this.updateHud();
-    }
-
-    gameOver() {
+    }    gameOver() {
         this.playSound('wrong');
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
