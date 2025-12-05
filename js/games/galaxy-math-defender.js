@@ -466,15 +466,40 @@ class GalaxyMathDefender {
             cancelAnimationFrame(this.animationId);
             this.animationId = null;
         }
-        const q = document.getElementById('gmdQuestion');
-        if (q) q.textContent = '¡Juego Terminado!';
         
-        // Show restart option
+        // Show game over message on canvas
+        this.showGameOverMessage();
+        
+        // Auto-restart after showing the message
         setTimeout(() => {
-            if (confirm(`¡Juego Terminado!\n\nPuntos finales: ${this.score}\nOleadas completadas: ${this.wave - 1}\n\n¿Quieres jugar de nuevo?`)) {
-                this.restart();
-            }
-        }, 500);
+            this.restart();
+        }, 3000);
+    }
+    
+    showGameOverMessage() {
+        // Clear canvas and show game over message
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+        
+        // Title
+        this.ctx.fillStyle = '#ff4444';
+        this.ctx.font = 'bold 48px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText('¡Juego Terminado!', this.width / 2, this.height / 2 - 60);
+        
+        // Score
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.font = '32px Arial';
+        this.ctx.fillText(`Puntos: ${this.score}`, this.width / 2, this.height / 2);
+        
+        // Waves
+        this.ctx.fillText(`Oleadas: ${this.wave - 1}`, this.width / 2, this.height / 2 + 40);
+        
+        // Restart message
+        this.ctx.fillStyle = '#44ff44';
+        this.ctx.font = '24px Arial';
+        this.ctx.fillText('Reiniciando...', this.width / 2, this.height / 2 + 100);
     }
 
     restart() {
