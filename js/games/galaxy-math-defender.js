@@ -15,7 +15,7 @@ class GalaxyMathDefender {
         this.playerSpeed = 400;
         this.enemies = [];
         this.bullets = [];
-        this.enemySpeed = 25; // Start slower (was 40)
+        this.enemySpeed = this.grade === 1 ? 15 : 25; // Slower for grade 1
         this.bulletSpeed = 200;
         this.lastTime = null;
         this.animationId = null;
@@ -27,6 +27,9 @@ class GalaxyMathDefender {
         this.keys = {};
         this.waveTransitioning = false;
         this.transitionDelay = 0;
+        this.lastSpawnTime = 0;
+        this.spawnInterval = 3; // Spawn new enemies every 3 seconds
+        this.hasCorrectAnswer = false; // Track if correct answer is on screen
         
         // Visual feedback for hits/misses
         this.flashEffect = null; // { type: 'correct' | 'wrong', alpha: 1.0, duration: 0 }
@@ -349,6 +352,15 @@ class GalaxyMathDefender {
             }
         }
 
+        // Continuously spawn enemies until correct answer is hit
+        if (!this.waveTransitioning) {
+            this.lastSpawnTime += dt;
+            if (this.lastSpawnTime >= this.spawnInterval) {
+                this.lastSpawnTime = 0;
+                this.spawnEnemiesForProblem(this.currentProblem);
+            }
+        }
+
         // Handle wave transitioning delay
         if (this.waveTransitioning) {
             this.transitionDelay -= dt;
@@ -357,6 +369,7 @@ class GalaxyMathDefender {
                 if (this.nextProblem) {
                     this.currentProblem = this.nextProblem;
                     this.nextProblem = null;
+                    this.lastSpawnTime = 0;
                     this.spawnEnemiesForProblem(this.currentProblem);
                     this.updateHud();
                 }
@@ -380,8 +393,9 @@ class GalaxyMathDefender {
         }
 
         // Move enemies
-        // Speed increases gradually: starts at 25, increases by 3 per wave
-        const enemySpeed = this.enemySpeed + (this.wave - 1) * 3;
+        // Speed increases gradually: grade 1 slower (starts at 15, +2 per wave), grade 2+ normal (starts at 25, +3 per wave)
+        const speedIncrease = this.grade === 1 ? 2 : 3;
+        const enemySpeed = this.enemySpeed + (this.wave - 1) * speedIncrease;
         this.enemies.forEach(e => {
             e.y += enemySpeed * dt;
         });
@@ -427,13 +441,13 @@ class GalaxyMathDefender {
         this.score += 10;
         this.wave++;
         
-        // Clear all remaining enemies from the screen
-        this.enemies = [];
-        
-        // Prepare next problem but don't spawn immediately
-        this.nextProblem = this.generateProblem();
+        // Remove only the correct answer and wrong answers, but let them naturally fall off screen
+        // Stop spawning new enemies for this problem
         this.waveTransitioning = true;
         this.transitionDelay = 1.5;
+        
+        // Prepare next problem
+        this.nextProblem = this.generateProblem();
         
         this.updateHud();
     }
@@ -514,6 +528,8 @@ class GalaxyMathDefender {
         this.waveTransitioning = false;
         this.transitionDelay = 0;
         this.flashEffect = null;
+        this.lastSpawnTime = 0;
+        this.hasCorrectAnswer = false;
         
         this.setupGame();
         this.setupCanvas();
