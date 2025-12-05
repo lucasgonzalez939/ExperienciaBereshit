@@ -163,7 +163,9 @@
 }
 
 .calc-key {
+    /* Use aspect-ratio with max-height constraint to prevent vertical stretching */
     aspect-ratio: 1;
+    max-height: 100%;
     font-size: clamp(1rem, 3vw, 1.75rem);
     font-weight: bold;
     border: none;
@@ -179,11 +181,12 @@
     min-width: 0;
     padding: 0;
     width: 100%;
-    height: 100%;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
+    justify-self: center;
+    align-self: center;
     /* Font size relative to button size - 50% of min dimension */
     font-size: 6.5cqi;
     container-type: size;
