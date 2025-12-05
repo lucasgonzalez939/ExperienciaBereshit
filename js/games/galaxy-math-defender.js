@@ -28,7 +28,8 @@ class GalaxyMathDefender {
         this.waveTransitioning = false;
         this.transitionDelay = 0;
         this.lastSpawnTime = 0;
-        this.spawnInterval = 3; // Spawn new enemies every 3 seconds
+        this.spawnInterval = this.grade === 1 ? 6 : 4; // Spawn every 6 seconds for grade 1, 4 for grade 2
+        this.maxEnemies = 5; // Maximum enemies on screen at once
         this.hasCorrectAnswer = false; // Track if correct answer is on screen
         
         // Visual feedback for hits/misses
@@ -236,47 +237,48 @@ class GalaxyMathDefender {
     spawnEnemiesForProblem(problem) {
         const baseY = -40;
         const laneWidth = this.width / this.lanes;
-        const correctLane = this.randomBetween(0, this.lanes - 1);
-
-        // Correct enemy
-        this.enemies.push({
-            x: (correctLane + 0.5) * laneWidth,
-            y: baseY - this.randomBetween(0, 100),
-            value: problem.answer,
-            isCorrect: true
-        });
-
-        // Distractors
-        const usedValues = new Set([problem.answer]);
-        const availableLanes = [];
-        for (let i = 0; i < this.lanes; i++) {
-            if (i !== correctLane) availableLanes.push(i);
-        }
         
-        // Shuffle available lanes
-        for (let i = availableLanes.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [availableLanes[i], availableLanes[j]] = [availableLanes[j], availableLanes[i]];
-        }
-
-        const count = Math.min(3, availableLanes.length);
-        for (let i = 0; i < count; i++) {
-            let val;
-            let attempts = 0;
-            do {
-                attempts++;
-                const delta = this.randomBetween(-8, 8) || 1;
-                val = problem.answer + delta;
-                if (val < 0) val = Math.abs(problem.answer + delta);
-            } while (usedValues.has(val) && attempts < 20);
-            usedValues.add(val);
+        // Count current active enemies to avoid exceeding max
+        const activeEnemies = this.enemies.filter(e => !e.dead && !e.deadMissed).length;
+        const canSpawn = this.maxEnemies - activeEnemies;
+        
+        if (canSpawn <= 0) return; // Don't spawn if at max capacity
+        
+        // Determine how many enemies to spawn (1-2 at a time for slower pace)
+        const spawnCount = Math.min(Math.random() < 0.7 ? 1 : 2, canSpawn);
+        
+        for (let spawn = 0; spawn < spawnCount; spawn++) {
+            const isCorrect = Math.random() < 0.4; // 40% chance of spawning the correct answer
+            const lane = this.randomBetween(0, this.lanes - 1);
             
-            this.enemies.push({
-                x: (availableLanes[i] + 0.5) * laneWidth,
-                y: baseY - this.randomBetween(0, 100),
-                value: val,
-                isCorrect: false
-            });
+            if (isCorrect) {
+                this.enemies.push({
+                    x: (lane + 0.5) * laneWidth,
+                    y: baseY - this.randomBetween(0, 150),
+                    value: problem.answer,
+                    isCorrect: true
+                });
+            } else {
+                // Generate distractor
+                const usedValues = new Set([problem.answer]);
+                this.enemies.forEach(e => usedValues.add(e.value));
+                
+                let val;
+                let attempts = 0;
+                do {
+                    attempts++;
+                    const delta = this.randomBetween(-8, 8) || 1;
+                    val = problem.answer + delta;
+                    if (val < 0) val = Math.abs(problem.answer + delta);
+                } while (usedValues.has(val) && attempts < 20);
+                
+                this.enemies.push({
+                    x: (lane + 0.5) * laneWidth,
+                    y: baseY - this.randomBetween(0, 150),
+                    value: val,
+                    isCorrect: false
+                });
+            }
         }
     }
 
@@ -355,7 +357,9 @@ class GalaxyMathDefender {
         // Continuously spawn enemies until correct answer is hit
         if (!this.waveTransitioning) {
             this.lastSpawnTime += dt;
-            if (this.lastSpawnTime >= this.spawnInterval) {
+            // Only spawn if we have fewer than max enemies and enough time has passed
+            const activeEnemies = this.enemies.filter(e => !e.dead && !e.deadMissed).length;
+            if (this.lastSpawnTime >= this.spawnInterval && activeEnemies < this.maxEnemies) {
                 this.lastSpawnTime = 0;
                 this.spawnEnemiesForProblem(this.currentProblem);
             }
