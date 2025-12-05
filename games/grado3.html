@@ -2,33 +2,29 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tercer Grado - Experiencia Bereshit</title>
+    <link rel="stylesheet" href="../css/styles.css">
     <link rel="stylesheet" href="../css/game.css">
+    <link rel="stylesheet" href="../css/calculator.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
-    <div class="game-container">
-        <header class="game-header">
-            <button class="back-btn" onclick="goBack()">← Volver</button>
-            <h1 class="game-title">Tercer Grado</h1>
-            <div class="game-info">
-                <span class="info-label">Próximamente</span>
-            </div>
-        </header>
-        
-        <div class="game-content" id="gameArea">
-            <div class="coming-soon">
-                <h2>🎮 Juego en desarrollo</h2>
-                <p>Pronto estará disponible un juego especial para Tercer Grado</p>
-                <button class="back-btn-large" onclick="goBack()">← Volver al menú principal</button>
-            </div>
-        </div>
-    </div>
+    <div id="gameContainer"></div>
     
+    <script src="../js/games/calculator-challenge.js"></script>
     <script>
-        function goBack() {
-            window.location.href = '../index.html';
-        }
+        // Initialize the Calculator Challenge game
+        const gameContainer = document.getElementById('gameContainer');
+        const game = new CalculatorChallenge(gameContainer, {
+            maxTarget: 2500
+        });
     </script>
 </body>
 </html>
