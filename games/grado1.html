@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primer Grado - Experiencia Bereshit</title>
+    <link rel="stylesheet" href="../css/game.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-content" id="gameArea">
+            <!-- Game will be loaded here -->
+        </div>
+        
+        <!-- Back button overlayed -->
+        <button class="back-btn-overlay" onclick="goBack()" title="Volver al menú">✕</button>
+    </div>
+    
+    <script src="../js/utils.js"></script>
+    <script src="../js/games/galaxy-math-defender.js"></script>
+    <script>
+        // Initialize game with easy difficulty for grade 1
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameArea = document.getElementById('gameArea');
+            const game = new GalaxyMathDefender(gameArea, {
+                difficulty: 'easy',
+                maxNumber: 10,
+                operations: ['+', '-'],
+                grade: 1
+            });
+        });
+        
+        function goBack() {
+            if (confirm('¿Seguro que quieres salir del juego?')) {
+                window.location.href = '../index.html';
+            }
+        }
+    </script>
+</body>
+</html>

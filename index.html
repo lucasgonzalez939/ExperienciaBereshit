@@ -3,71 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiencia Bereshit</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-            padding: 1rem;
-        }
-
-        .container {
-            max-width: 600px;
-            width: 100%;
-        }
-
-        h1 {
-            font-size: 1.75rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        p {
-            font-size: 1rem;
-            opacity: 0.9;
-            line-height: 1.6;
-        }
-
-        /* Tablet and larger screens */
-        @media (min-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            p {
-                font-size: 1.25rem;
-            }
-        }
-
-        /* Desktop screens */
-        @media (min-width: 1024px) {
-            h1 {
-                font-size: 3rem;
-            }
-
-            p {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+    <title>Experiencia Bereshit - Juegos Matemáticos</title>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Página en construcción</h1>
-        <p>Pronto estarán los juegos de Experiencia Bereshit</p>
+        <header>
+            <h1 class="main-title">Experiencia Bereshit</h1>
+            <p class="subtitle">Selecciona tu grado para comenzar</p>
+        </header>
+        
+        <main class="grade-selection">
+            <button class="grade-btn" data-grade="1" onclick="selectGrade(1)">
+                <span class="grade-number">1°</span>
+                <span class="grade-label">Primer Grado</span>
+            </button>
+            
+            <button class="grade-btn" data-grade="2" onclick="selectGrade(2)">
+                <span class="grade-number">2°</span>
+                <span class="grade-label">Segundo Grado</span>
+            </button>
+            
+            <button class="grade-btn" data-grade="3" onclick="selectGrade(3)">
+                <span class="grade-number">3°</span>
+                <span class="grade-label">Tercer Grado</span>
+            </button>
+            
+            <button class="grade-btn" data-grade="4" onclick="selectGrade(4)">
+                <span class="grade-number">4°</span>
+                <span class="grade-label">Cuarto Grado</span>
+            </button>
+        </main>
     </div>
+    
+    <script src="js/main.js"></script>
 </body>
 </html>
