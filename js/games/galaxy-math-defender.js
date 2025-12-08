@@ -15,7 +15,7 @@ class GalaxyMathDefender {
         this.playerSpeed = 400;
         this.enemies = [];
         this.bullets = [];
-        this.enemySpeed = this.grade === 1 ? 15 : 25; // Slower for grade 1
+        this.enemySpeed = this.grade === 1 ? 12 : 30; // Slower for grade 1 (12), faster for grade 2 (30)
         this.bulletSpeed = 200;
         this.lastTime = null;
         this.animationId = null;
@@ -28,9 +28,14 @@ class GalaxyMathDefender {
         this.waveTransitioning = false;
         this.transitionDelay = 0;
         this.lastSpawnTime = 0;
-        this.spawnInterval = this.grade === 1 ? 6 : 4; // Spawn every 6 seconds for grade 1, 4 for grade 2
-        this.maxEnemies = 5; // Maximum enemies on screen at once
+        this.spawnInterval = 1; // Respawn after 1 second
+        this.maxEnemiesPerWave = this.grade === 1 ? 4 : 5; // How many enemies spawn per wave
         this.hasCorrectAnswer = false; // Track if correct answer is on screen
+        this.problemStartTime = 0; // Track when current problem started
+        this.problemTimeout = this.grade === 1 ? 30 : 25; // Auto-advance after 30s (grade 1) or 25s (grade 2)
+        this.waitingForNextWave = false; // Track if we're waiting to spawn next wave
+        this.waveRespawnCount = 0; // Track how many times wave has respawned for current problem
+        this.maxRespawns = this.grade === 2 ? 3 : 999; // Grade 2: 3 respawns max, Grade 1: unlimited
         
         // Visual feedback for hits/misses
         this.flashEffect = null; // { type: 'correct' | 'wrong', alpha: 1.0, duration: 0 }
@@ -70,7 +75,7 @@ class GalaxyMathDefender {
                         <span class="arrow">◀</span>
                     </button>
                     <button class="control-btn control-fire" id="gmdFireBtn">
-                        <span class="fire-icon">🔫</span>
+                        <span class="fire-icon">▲</span>
                     </button>
                     <button class="control-btn control-right" id="gmdRightBtn">
                         <span class="arrow">▶</span>
@@ -175,20 +180,18 @@ class GalaxyMathDefender {
     generateNumberForGrade() {
         // Generate numbers based on grade level
         if (this.grade === 1) {
-            // First grade (easy): numbers 0-10 only
-            return this.randomBetween(0, 10);
+            // First grade: numbers 0-20 only (simple addition and subtraction)
+            return this.randomBetween(0, 20);
         } else if (this.grade === 2) {
-            // Second grade (slightly harder): numbers 0-10 OR numbers ending in 0 or 5 up to 50
-            const useSimple = Math.random() < 0.5;
-            if (useSimple) {
-                return this.randomBetween(0, 10);
-            } else {
-                // Numbers ending in 0 or 5: 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50
-                const multiples = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
-                return multiples[this.randomBetween(0, multiples.length - 1)];
+            // Second grade: numbers in increments of 5 and 10, up to 100
+            // Valid numbers: 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100
+            const multiples = [];
+            for (let i = 0; i <= 100; i += 5) {
+                multiples.push(i);
             }
+            return multiples[this.randomBetween(0, multiples.length - 1)];
         } else {
-            // Default fallback
+            // Default fallback for other grades
             return this.randomBetween(0, this.maxNumber);
         }
     }
@@ -200,10 +203,29 @@ class GalaxyMathDefender {
         op = this.operations[Math.floor(Math.random() * this.operations.length)];
         
         if (op === '+') {
-            a = this.generateNumberForGrade();
-            b = this.generateNumberForGrade();
-            answer = a + b;
-            text = `${a} + ${b}`;
+            if (this.grade === 1) {
+                // Grade 1: Ensure sum doesn't exceed 20
+                a = this.randomBetween(0, 20);
+                b = this.randomBetween(0, 20 - a); // b is limited so a + b <= 20
+                answer = a + b;
+                text = `${a} + ${b}`;
+            } else if (this.grade === 2) {
+                // Grade 2: Both numbers are multiples of 5, sum can go up to 200 but keep it reasonable
+                a = this.generateNumberForGrade();
+                b = this.generateNumberForGrade();
+                // If sum exceeds 100, regenerate with smaller numbers
+                if (a + b > 100) {
+                    a = this.randomBetween(0, 10) * 5; // 0-50
+                    b = this.randomBetween(0, 10) * 5; // 0-50
+                }
+                answer = a + b;
+                text = `${a} + ${b}`;
+            } else {
+                a = this.generateNumberForGrade();
+                b = this.generateNumberForGrade();
+                answer = a + b;
+                text = `${a} + ${b}`;
+            }
         } else if (op === '-') {
             a = this.generateNumberForGrade();
             b = this.generateNumberForGrade();
@@ -233,69 +255,89 @@ class GalaxyMathDefender {
         this.currentProblem = this.generateProblem();
         // Reset flag — no correct answer spawned yet for the new problem
         this.hasCorrectAnswer = false;
-        this.spawnEnemiesForProblem(this.currentProblem);
+        this.problemStartTime = 0; // Will be set in first update()
+        this.waitingForNextWave = false;
+        this.waveRespawnCount = 0; // Reset respawn counter for new problem
+        this.spawnCompleteWave(this.currentProblem);
     }
 
-    spawnEnemiesForProblem(problem) {
+    spawnCompleteWave(problem) {
+        // Spawn a complete wave with the correct answer and multiple distractors
         const baseY = -40;
         const laneWidth = this.width / this.lanes;
+        const usedLanes = new Set();
         
-        // Count current active enemies to avoid exceeding max
-        const activeEnemies = this.enemies.filter(e => !e.dead && !e.deadMissed).length;
-        const canSpawn = this.maxEnemies - activeEnemies;
+        // Always spawn the correct answer first
+        const correctLane = this.randomBetween(0, this.lanes - 1);
+        usedLanes.add(correctLane);
+        this.enemies.push({
+            x: (correctLane + 0.5) * laneWidth,
+            y: baseY - this.randomBetween(0, 100),
+            value: problem.answer,
+            isCorrect: true
+        });
+        this.hasCorrectAnswer = true;
         
-        if (canSpawn <= 0) return; // Don't spawn if at max capacity
+        // Spawn distractors (3-4 distractors for grade 1, 4 for grade 2)
+        const distractorCount = this.maxEnemiesPerWave - 1;
+        const usedValues = new Set([problem.answer]);
         
-        // Determine how many enemies to spawn (1-2 at a time for slower pace)
-        const spawnCount = Math.min(Math.random() < 0.7 ? 1 : 2, canSpawn);
-        
-        // Determine if there is already a correct answer active
-        const existingHasCorrect = this.enemies.some(e => e.isCorrect && !e.dead && !e.deadMissed);
-        let spawnedCorrectThisBatch = false;
-
-        for (let spawn = 0; spawn < spawnCount; spawn++) {
-            // 40% chance of spawning the correct answer, but guarantee at least one correct if none exist
-            let isCorrect = Math.random() < 0.4;
-            if (!existingHasCorrect && !spawnedCorrectThisBatch && spawn === spawnCount - 1) {
-                // Force a correct answer on the last spawn if none will be present
-                isCorrect = true;
-            }
-            const lane = this.randomBetween(0, this.lanes - 1);
+        for (let i = 0; i < distractorCount; i++) {
+            // Try to get a unique lane
+            let lane;
+            let attempts = 0;
+            do {
+                lane = this.randomBetween(0, this.lanes - 1);
+                attempts++;
+            } while (usedLanes.has(lane) && attempts < 10);
             
-            if (isCorrect) {
-                this.enemies.push({
-                    x: (lane + 0.5) * laneWidth,
-                    y: baseY - this.randomBetween(0, 150),
-                    value: problem.answer,
-                    isCorrect: true
-                });
-                spawnedCorrectThisBatch = true;
-                this.hasCorrectAnswer = true;
-            } else {
-                // Generate distractor
-                const usedValues = new Set([problem.answer]);
-                this.enemies.forEach(e => usedValues.add(e.value));
-                
-                let val;
-                let attempts = 0;
+            usedLanes.add(lane);
+            
+            // Generate distractor value
+            let val;
+            let valueAttempts = 0;
+            
+            if (this.grade === 1) {
+                // Grade 1: distractors should be 0-20
                 do {
-                    attempts++;
+                    valueAttempts++;
+                    const delta = this.randomBetween(-8, 8) || 1;
+                    val = problem.answer + delta;
+                    if (val < 0) val = 0;
+                    if (val > 20) val = 20;
+                } while (usedValues.has(val) && valueAttempts < 20);
+            } else if (this.grade === 2) {
+                // Grade 2: distractors must be multiples of 5, between 0-200
+                do {
+                    valueAttempts++;
+                    const deltaMultiples = this.randomBetween(-6, 6);
+                    const delta = deltaMultiples * 5;
+                    val = problem.answer + delta;
+                    if (val < 0) val = 0;
+                    if (val > 200) val = 200;
+                    val = Math.round(val / 5) * 5;
+                } while (usedValues.has(val) && valueAttempts < 20);
+            } else {
+                do {
+                    valueAttempts++;
                     const delta = this.randomBetween(-8, 8) || 1;
                     val = problem.answer + delta;
                     if (val < 0) val = Math.abs(problem.answer + delta);
-                } while (usedValues.has(val) && attempts < 20);
-                
-                this.enemies.push({
-                    x: (lane + 0.5) * laneWidth,
-                    y: baseY - this.randomBetween(0, 150),
-                    value: val,
-                    isCorrect: false
-                });
+                } while (usedValues.has(val) && valueAttempts < 20);
             }
+            
+            usedValues.add(val);
+            
+            this.enemies.push({
+                x: (lane + 0.5) * laneWidth,
+                y: baseY - this.randomBetween(0, 100),
+                value: val,
+                isCorrect: false
+            });
         }
-    }
-
-    movePlayer(dir) {
+        
+        this.waitingForNextWave = false;
+    }    movePlayer(dir) {
         const laneWidth = this.width / this.lanes;
         const currentLane = Math.round(this.player.x / laneWidth - 0.5);
         let newLane = currentLane + dir;
@@ -364,6 +406,11 @@ class GalaxyMathDefender {
     update(dt) {
         const laneWidth = this.width / this.lanes;
 
+        // Initialize problem start time on first update
+        if (this.problemStartTime === 0 && !this.waveTransitioning) {
+            this.problemStartTime = performance.now() / 1000;
+        }
+
         // Update flash effect
         if (this.flashEffect) {
             this.flashEffect.duration -= dt;
@@ -373,14 +420,39 @@ class GalaxyMathDefender {
             }
         }
 
-        // Continuously spawn enemies until correct answer is hit
-        if (!this.waveTransitioning) {
-            this.lastSpawnTime += dt;
-            // Only spawn if we have fewer than max enemies and enough time has passed
+        // Check if problem has timed out (not solved within timeout period)
+        if (!this.waveTransitioning && this.problemStartTime > 0) {
+            const elapsedTime = (performance.now() / 1000) - this.problemStartTime;
+            if (elapsedTime > this.problemTimeout) {
+                // Auto-advance to next problem
+                this.moveToNextProblem();
+            }
+        }
+
+        // Check if all enemies are gone and we need to respawn the wave
+        if (!this.waveTransitioning && !this.waitingForNextWave) {
             const activeEnemies = this.enemies.filter(e => !e.dead && !e.deadMissed).length;
-            if (this.lastSpawnTime >= this.spawnInterval && activeEnemies < this.maxEnemies) {
-                this.lastSpawnTime = 0;
-                this.spawnEnemiesForProblem(this.currentProblem);
+            
+            // If no active enemies remain
+            if (activeEnemies === 0) {
+                // Check if we've hit the respawn limit
+                if (this.waveRespawnCount >= this.maxRespawns) {
+                    // Auto-advance to next problem after max respawns
+                    this.moveToNextProblem();
+                } else {
+                    // Wait and respawn the same problem
+                    this.waitingForNextWave = true;
+                    this.lastSpawnTime = 0;
+                }
+            }
+        }
+        
+        // Respawn the wave after delay if waiting
+        if (this.waitingForNextWave && !this.waveTransitioning) {
+            this.lastSpawnTime += dt;
+            if (this.lastSpawnTime >= this.spawnInterval) {
+                this.waveRespawnCount++; // Increment respawn counter
+                this.spawnCompleteWave(this.currentProblem);
             }
         }
 
@@ -393,7 +465,10 @@ class GalaxyMathDefender {
                     this.currentProblem = this.nextProblem;
                     this.nextProblem = null;
                     this.lastSpawnTime = 0;
-                    this.spawnEnemiesForProblem(this.currentProblem);
+                    this.problemStartTime = 0; // Reset timer for new problem
+                    this.waitingForNextWave = false;
+                    this.waveRespawnCount = 0; // Reset respawn counter for new problem
+                    this.spawnCompleteWave(this.currentProblem);
                     this.updateHud();
                 }
             }
@@ -416,8 +491,8 @@ class GalaxyMathDefender {
         }
 
         // Move enemies
-        // Speed increases gradually: grade 1 slower (starts at 15, +2 per wave), grade 2+ normal (starts at 25, +3 per wave)
-        const speedIncrease = this.grade === 1 ? 2 : 3;
+        // Speed increases gradually: grade 1 slower (starts at 12, +1 per wave), grade 2 faster (starts at 30, +2 per wave)
+        const speedIncrease = this.grade === 1 ? 1 : 2;
         const enemySpeed = this.enemySpeed + (this.wave - 1) * speedIncrease;
         this.enemies.forEach(e => {
             e.y += enemySpeed * dt;
@@ -464,15 +539,22 @@ class GalaxyMathDefender {
         this.score += 10;
         this.wave++;
         
-        // Remove only the correct answer and wrong answers, but let them naturally fall off screen
+        // Make ALL enemies explode/disappear (correct and distractors)
+        this.enemies.forEach(e => {
+            if (!e.dead && !e.deadMissed) {
+                e.dead = true;
+                e.exploding = true; // Mark for visual effect
+            }
+        });
+        
         // Stop spawning new enemies for this problem
         this.waveTransitioning = true;
         this.transitionDelay = 1.5;
         
         // Prepare next problem
-    // Reset flag so the next problem will guarantee a correct spawn
-    this.hasCorrectAnswer = false;
-    this.nextProblem = this.generateProblem();
+        // Reset flag so the next problem will guarantee a correct spawn
+        this.hasCorrectAnswer = false;
+        this.nextProblem = this.generateProblem();
         
         this.updateHud();
     }
@@ -510,7 +592,20 @@ class GalaxyMathDefender {
         this.nextProblem = this.generateProblem();
         
         this.updateHud();
-    }    gameOver() {
+    }
+
+    moveToNextProblem() {
+        // Move to next problem without penalty (timeout scenario)
+        this.wave++;
+        this.waveTransitioning = true;
+        this.transitionDelay = 1.5;
+        // Reset flag so the next problem will guarantee a correct spawn
+        this.hasCorrectAnswer = false;
+        this.nextProblem = this.generateProblem();
+        this.updateHud();
+    }
+
+    gameOver() {
         this.playSound('wrong');
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
@@ -566,6 +661,9 @@ class GalaxyMathDefender {
         this.flashEffect = null;
         this.lastSpawnTime = 0;
         this.hasCorrectAnswer = false;
+        this.problemStartTime = 0;
+        this.waitingForNextWave = false;
+        this.waveRespawnCount = 0;
         
         this.setupGame();
         this.setupCanvas();

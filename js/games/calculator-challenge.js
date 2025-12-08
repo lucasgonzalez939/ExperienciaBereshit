@@ -7,7 +7,7 @@ class CalculatorChallenge {
         // Game state
         this.currentProblem = null;
         this.userInput = '';
-        this.selectedOperation = null; // '+' or '-'
+        this.selectedOperation = null; // Operation is now fixed in the problem, not selected by user
         this.score = 0;
         this.streak = 0;
         this.problemsSolved = 0;
@@ -72,12 +72,12 @@ class CalculatorChallenge {
                         <button class="calc-key calc-number-key" data-value="1">1</button>
                         <button class="calc-key calc-number-key" data-value="2">2</button>
                         <button class="calc-key calc-number-key" data-value="3">3</button>
-                        <button class="calc-key calc-operator-key calc-active-op" data-value="+">+</button>
-                        
                         <button class="calc-key calc-disabled-key" data-value="multiply" disabled>×</button>
-                        <button class="calc-key calc-number-key" data-value="0">0</button>
+                        
                         <button class="calc-key calc-disabled-key" data-value="divide" disabled>÷</button>
-                        <button class="calc-key calc-operator-key calc-active-op" data-value="-">−</button>
+                        <button class="calc-key calc-number-key" data-value="0">0</button>
+                        <button class="calc-key calc-disabled-key" data-value="dummy1" disabled></button>
+                        <button class="calc-key calc-disabled-key" data-value="dummy2" disabled></button>
                         
                         <button class="calc-key calc-submit-key" data-value="submit" style="grid-column: span 4;">=</button>
                     </div>
@@ -98,14 +98,7 @@ class CalculatorChallenge {
             });
         });
         
-        // Operation keys (+ and -)
-        const operationKeys = this.container.querySelectorAll('.calc-operator-key');
-        operationKeys.forEach(key => {
-            key.addEventListener('click', () => {
-                const value = key.getAttribute('data-value');
-                this.selectOperation(value);
-            });
-        });
+        // Operation keys are removed - operation is fixed in the problem
         
         // Clear all key
         const clearAllKey = this.container.querySelector('.calc-clear-all-key');
@@ -152,8 +145,6 @@ class CalculatorChallenge {
         document.addEventListener('keydown', (e) => {
             if (e.key >= '0' && e.key <= '9') {
                 this.handleNumberInput(e.key);
-            } else if (e.key === '+' || e.key === '-') {
-                this.selectOperation(e.key === '+' ? '+' : '-');
             } else if (e.key === 'Enter') {
                 this.checkAnswer();
             } else if (e.key === 'Backspace') {
@@ -165,8 +156,9 @@ class CalculatorChallenge {
     }
 
     generateNewProblem() {
-        // Generate target number (not bigger than 2500)
-        const target = this.randomBetween(10, this.maxTarget);
+        // Generate target number (multiples of 10, not bigger than 2500)
+        const targetTens = this.randomBetween(1, 250); // 1-250 tens
+        const target = targetTens * 10; // Convert to multiple of 10 (10, 20, 30, ... 2500)
         
         // Choose operation
         const operator = Math.random() < 0.5 ? '+' : '-';
@@ -175,17 +167,19 @@ class CalculatorChallenge {
         
         if (operator === '+') {
             // For addition: num1 + answer = target
-            // answer should be reasonable (not too small)
-            const minAnswer = Math.max(1, Math.floor(target * 0.1));
-            const maxAnswer = Math.floor(target * 0.9);
-            answer = this.randomBetween(minAnswer, maxAnswer);
+            // Both num1 and answer should be multiples of 10
+            const minAnswerTens = Math.max(1, Math.floor(targetTens * 0.1));
+            const maxAnswerTens = Math.floor(targetTens * 0.9);
+            const answerTens = this.randomBetween(minAnswerTens, maxAnswerTens);
+            answer = answerTens * 10;
             num1 = target - answer;
         } else {
             // For subtraction: num1 - answer = target
-            // num1 should be bigger than target
-            const minAnswer = Math.max(1, Math.floor(target * 0.1));
-            const maxNum1 = Math.min(this.maxTarget, target + Math.floor(target * 0.9));
-            answer = this.randomBetween(minAnswer, Math.floor(target * 0.5));
+            // Both num1 and answer should be multiples of 10
+            const minAnswerTens = Math.max(1, Math.floor(targetTens * 0.1));
+            const maxNum1Tens = Math.min(250, targetTens + Math.floor(targetTens * 0.9));
+            const answerTens = this.randomBetween(minAnswerTens, Math.floor(targetTens * 0.5));
+            answer = answerTens * 10;
             num1 = target + answer;
         }
         
@@ -195,11 +189,15 @@ class CalculatorChallenge {
             target: target,
             answer: answer
         };
+        
+        // Set the operation automatically (no need for user to select it)
+        this.selectedOperation = operator;
     }
     
     selectOperation(op) {
-        this.selectedOperation = op;
-        this.updateDisplay();
+        // This method is no longer used - operation is fixed
+        // Keeping it for backward compatibility but it does nothing
+        return;
     }
 
     handleNumberInput(digit) {
@@ -212,7 +210,7 @@ class CalculatorChallenge {
 
     clearInput() {
         this.userInput = '';
-        this.selectedOperation = null;
+        // Don't clear selectedOperation - it's fixed for the problem
         this.updateDisplay();
     }
 
@@ -224,12 +222,12 @@ class CalculatorChallenge {
     }
 
     checkAnswer() {
-        if (this.userInput === '' || this.selectedOperation === null) return;
+        if (this.userInput === '') return;
         
         const userAnswer = parseInt(this.userInput);
         
-        // Check if both the operation and number are correct
-        if (userAnswer === this.currentProblem.answer && this.selectedOperation === this.currentProblem.operator) {
+        // Check if the number is correct (operation is already fixed)
+        if (userAnswer === this.currentProblem.answer) {
             this.handleCorrectAnswer();
         } else {
             this.handleWrongAnswer();
@@ -245,7 +243,7 @@ class CalculatorChallenge {
         // Clear input and generate new problem after a short delay
         setTimeout(() => {
             this.userInput = '';
-            this.selectedOperation = null;
+            // Don't clear selectedOperation - will be set by next problem
             this.generateNewProblem();
             this.updateDisplay();
         }, 600);
@@ -260,7 +258,7 @@ class CalculatorChallenge {
         // Clear input to try again
         setTimeout(() => {
             this.userInput = '';
-            this.selectedOperation = null;
+            // Don't clear selectedOperation - it stays fixed
             this.updateDisplay();
         }, 600);
         
@@ -297,8 +295,9 @@ class CalculatorChallenge {
         
         if (num1El) num1El.textContent = this.currentProblem.num1;
         if (operatorDisplayEl) {
-            operatorDisplayEl.textContent = this.selectedOperation || '?';
-            operatorDisplayEl.classList.toggle('calc-input-active', this.selectedOperation !== null);
+            // Show the fixed operation (from the problem, not user selection)
+            operatorDisplayEl.textContent = this.currentProblem.operator;
+            operatorDisplayEl.classList.add('calc-input-active'); // Always active since it's fixed
         }
         if (targetEl) targetEl.textContent = this.currentProblem.target;
         if (inputEl) {
@@ -323,7 +322,7 @@ class CalculatorChallenge {
         this.streak = 0;
         this.problemsSolved = 0;
         this.userInput = '';
-        this.selectedOperation = null;
+        // selectedOperation will be set by generateNewProblem
         this.generateNewProblem();
         this.updateDisplay();
     }
