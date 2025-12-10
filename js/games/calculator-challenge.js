@@ -48,10 +48,11 @@ class CalculatorChallenge {
                 <div class="calc-game-area">
                     <!-- Problem display -->
                     <div class="calc-problem-display">
+                        <div class="calc-legend">Ingresa el número que falta para completar la operación</div>
                         <div class="calc-equation">
                             <span class="calc-number" id="calcNum1">0</span>
                             <span class="calc-operator-display" id="calcOperatorDisplay">?</span>
-                            <span class="calc-input-display" id="calcInput">?</span>
+                            <span class="calc-input-display" id="calcInput">???</span>
                             <span class="calc-equals">=</span>
                             <span class="calc-target" id="calcTarget">0</span>
                         </div>
@@ -156,32 +157,52 @@ class CalculatorChallenge {
     }
 
     generateNewProblem() {
-        // Generate target number (multiples of 10, not bigger than 2500)
-        const targetTens = this.randomBetween(1, 250); // 1-250 tens
-        const target = targetTens * 10; // Convert to multiple of 10 (10, 20, 30, ... 2500)
+        // Generate a starting number (num1) - multiples of 10
+        const num1Tens = this.randomBetween(10, 250); // 100 to 2500
+        const num1 = num1Tens * 10;
         
         // Choose operation
         const operator = Math.random() < 0.5 ? '+' : '-';
         
-        let num1, answer;
+        // We need to find an answer that changes only ONE digit
+        // Strategy: Pick a digit position and change only that digit
         
-        if (operator === '+') {
-            // For addition: num1 + answer = target
-            // Both num1 and answer should be multiples of 10
-            const minAnswerTens = Math.max(1, Math.floor(targetTens * 0.1));
-            const maxAnswerTens = Math.floor(targetTens * 0.9);
-            const answerTens = this.randomBetween(minAnswerTens, maxAnswerTens);
-            answer = answerTens * 10;
-            num1 = target - answer;
-        } else {
-            // For subtraction: num1 - answer = target
-            // Both num1 and answer should be multiples of 10
-            const minAnswerTens = Math.max(1, Math.floor(targetTens * 0.1));
-            const maxNum1Tens = Math.min(250, targetTens + Math.floor(targetTens * 0.9));
-            const answerTens = this.randomBetween(minAnswerTens, Math.floor(targetTens * 0.5));
-            answer = answerTens * 10;
-            num1 = target + answer;
+        let answer, target;
+        let maxAttempts = 50;
+        let attempts = 0;
+        
+        do {
+            // Pick which digit to change (units, tens, hundreds, or thousands)
+            const digitPosition = this.randomBetween(1, 4); // 1=tens, 2=hundreds, 3=thousands, 4=ten-thousands
+            const digitValue = this.randomBetween(1, 9); // How much to change
+            
+            // Calculate the answer based on which digit we want to change
+            answer = digitValue * Math.pow(10, digitPosition);
+            
+            if (operator === '+') {
+                target = num1 + answer;
+            } else {
+                target = num1 - answer;
+            }
+            
+            attempts++;
+            
+            // Check if only one digit changed and values are valid
+        } while (!this.onlyOneDigitChanged(num1, target) && attempts < maxAttempts);
+        
+        // If we couldn't find a valid problem, use a simple fallback
+        if (attempts >= maxAttempts) {
+            // Fallback: simple single digit change
+            answer = 100;
+            if (operator === '+') {
+                target = num1 + answer;
+            } else {
+                target = num1 - answer;
+            }
         }
+        
+        // Make sure answer is a multiple of 10
+        answer = Math.round(answer / 10) * 10;
         
         this.currentProblem = {
             num1: num1,
@@ -189,9 +210,22 @@ class CalculatorChallenge {
             target: target,
             answer: answer
         };
+    }
+    
+    onlyOneDigitChanged(num1, target) {
+        // Convert numbers to strings, pad with zeros to same length
+        const str1 = String(num1).padStart(4, '0');
+        const str2 = String(target).padStart(4, '0');
         
-        // Set the operation automatically (no need for user to select it)
-        this.selectedOperation = operator;
+        let differencesCount = 0;
+        for (let i = 0; i < str1.length; i++) {
+            if (str1[i] !== str2[i]) {
+                differencesCount++;
+            }
+        }
+        
+        // Only one digit should be different
+        return differencesCount === 1;
     }
     
     selectOperation(op) {
@@ -295,13 +329,14 @@ class CalculatorChallenge {
         
         if (num1El) num1El.textContent = this.currentProblem.num1;
         if (operatorDisplayEl) {
-            // Show the fixed operation (from the problem, not user selection)
+            // Show the fixed operation
             operatorDisplayEl.textContent = this.currentProblem.operator;
-            operatorDisplayEl.classList.add('calc-input-active'); // Always active since it's fixed
+            operatorDisplayEl.classList.add('calc-input-active');
         }
         if (targetEl) targetEl.textContent = this.currentProblem.target;
         if (inputEl) {
-            inputEl.textContent = this.userInput || '?';
+            // Show ??? as placeholder, or user's input as they type
+            inputEl.textContent = this.userInput || '???';
             inputEl.classList.toggle('calc-input-active', this.userInput !== '');
         }
         

@@ -95,6 +95,15 @@
     min-height: 0;
 }
 
+.calc-legend {
+    text-align: center;
+    font-size: clamp(0.875rem, 2vw, 1.25rem);
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    padding: 0 0.5rem;
+}
+
 .calc-equation {
     display: flex;
     justify-content: center;
@@ -131,7 +140,7 @@
 }
 
 .calc-input-display {
-    min-width: 3rem;
+    min-width: 6rem;
     padding: 0.25rem 0.75rem;
     background: #f7fafc;
     border: 3px dashed #cbd5e0;
@@ -145,6 +154,13 @@
     background: #edf2f7;
     border-color: #667eea;
     border-style: solid;
+}
+
+.calc-input-display.calc-wrong-number {
+    background: #fff5f5;
+    border-color: #fc8181;
+    border-style: solid;
+    color: #c53030;
 }
 
 /* Calculator Keypad */
