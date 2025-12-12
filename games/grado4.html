@@ -5,26 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cuarto Grado - Experiencia Bereshit</title>
     <link rel="stylesheet" href="../css/game.css">
+    <link rel="stylesheet" href="../css/math-jumper.css">
 </head>
 <body>
     <div class="game-container">
         <header class="game-header">
             <button class="back-btn" onclick="goBack()">← Volver</button>
-            <h1 class="game-title">Cuarto Grado</h1>
-            <div class="game-info">
-                <span class="info-label">Próximamente</span>
-            </div>
+            <h1 class="game-title">Cuarto Grado - Saltador Matemático</h1>
         </header>
         
         <div class="game-content" id="gameArea">
-            <div class="coming-soon">
-                <h2>🎮 Juego en desarrollo</h2>
-                <p>Pronto estará disponible un juego especial para Cuarto Grado</p>
-                <button class="back-btn-large" onclick="goBack()">← Volver al menú principal</button>
-            </div>
+            <!-- Game will be rendered here by JavaScript -->
         </div>
     </div>
     
+    <script src="../js/utils.js"></script>
+    <script src="../js/games/math-jumper.js"></script>
     <script>
         function goBack() {
             window.location.href = '../index.html';
