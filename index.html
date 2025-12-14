@@ -7,34 +7,56 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <header>
+        <div class="brand-context">
+            <img src="assets/images/logo-bereshit.png" alt="Bereshit School" class="logo-bereshit">
+        </div>
+        <div class="brand-provider">
+            <span class="powered-by">Powered by</span>
+            <img src="assets/images/logo-tecnokids.png" alt="TecnoKids" class="logo-tecnokids">
+        </div>
+    </header>
+
+    <button id="fullscreenBtn" class="fullscreen-btn" title="Pantalla Completa">
+        <span class="fullscreen-icon">⛶</span>
+    </button>
+
     <div class="container">
-        <header>
-            <h1 class="main-title">Experiencia Bereshit</h1>
-            <p class="subtitle">Selecciona tu grado para comenzar</p>
-        </header>
         
         <main class="grade-selection">
             <button class="grade-btn" data-grade="1" onclick="selectGrade(1)">
+                <span class="grade-icon">🚀</span>
                 <span class="grade-number">1°</span>
                 <span class="grade-label">Primer Grado</span>
+                <span class="grade-badge">Nivel Inicial</span>
             </button>
             
             <button class="grade-btn" data-grade="2" onclick="selectGrade(2)">
+                <span class="grade-icon">⭐</span>
                 <span class="grade-number">2°</span>
                 <span class="grade-label">Segundo Grado</span>
+                <span class="grade-badge">Nivel Básico</span>
             </button>
             
             <button class="grade-btn" data-grade="3" onclick="selectGrade(3)">
+                <span class="grade-icon">🧠</span>
                 <span class="grade-number">3°</span>
                 <span class="grade-label">Tercer Grado</span>
+                <span class="grade-badge">Nivel Medio</span>
             </button>
             
             <button class="grade-btn" data-grade="4" onclick="selectGrade(4)">
+                <span class="grade-icon">🏆</span>
                 <span class="grade-number">4°</span>
                 <span class="grade-label">Cuarto Grado</span>
+                <span class="grade-badge">Nivel Avanzado</span>
             </button>
         </main>
     </div>
+    
+    <button id="fullscreenBtn" class="fullscreen-btn" title="Pantalla Completa">
+        <span class="fullscreen-icon">⛶</span>
+    </button>
     
     <script src="js/main.js"></script>
 </body>

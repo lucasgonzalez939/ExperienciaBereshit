@@ -1,4 +1,20 @@
 /* Game Page Styles */
+@import url('https://fonts.googleapis.com/css2?family=Grandstander:wght@500;700&family=Poppins:wght@400;500;600&display=swap');
+
+:root {
+    /* TecnoKids Palette */
+    --tk-dark-grey: #313742;
+    --tk-cyan: #2EA8D3;
+    --tk-red: #E73C32;
+    
+    /* Bereshit Palette */
+    --bs-navy: #003F72;
+    --bs-green: #3F9C35;
+    --bs-orange: #FF9133;
+    
+    /* Neutrals */
+    --bg-neutral: #F5F7FA;
+}
 
 * {
     margin: 0;
@@ -7,9 +23,9 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', sans-serif;
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-color: var(--bg-neutral);
     color: white;
     overflow: hidden;
 }
@@ -20,11 +36,12 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
 }
 
 /* Header */
 .game-header {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     padding: 0.5rem 1rem;
     display: flex;
@@ -37,30 +54,35 @@ body {
     left: 0;
     right: 0;
     z-index: 1000;
+    border-bottom: 3px solid var(--bs-green);
 }
 
 .game-title {
+    font-family: 'Grandstander', cursive;
     font-size: 1.2rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    color: var(--tk-dark-grey);
+    text-shadow: none;
     flex: 1;
     text-align: center;
 }
 
 .back-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    background: transparent;
+    border: 2px solid var(--tk-dark-grey);
+    color: var(--tk-dark-grey);
     padding: 0.5rem 1rem;
     border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
-    font-family: inherit;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
     transition: all 0.3s ease;
 }
 
 .back-btn:hover,
 .back-btn:focus {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--tk-dark-grey);
+    color: white;
     transform: translateX(-3px);
 }
 
@@ -68,26 +90,26 @@ body {
     position: fixed;
     top: 1rem;
     left: 1rem;
-    background: rgba(0, 0, 0, 0.7);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: var(--tk-red);
+    border: 2px solid white;
     color: white;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-family: inherit;
     transition: all 0.3s ease;
     z-index: 1001;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .back-btn-overlay:hover,
 .back-btn-overlay:focus {
-    background: rgba(244, 67, 54, 0.8);
+    background: #c0392b;
     transform: scale(1.1);
 }
 
@@ -98,12 +120,12 @@ body {
 .restart-btn-overlay {
     position: fixed;
     top: 1rem;
-    left: 4rem;
-    background: rgba(33, 150, 243, 0.7);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    left: 4.5rem; /* Placed next to back button (1rem + 45px + gap) */
+    background: var(--bs-green);
+    border: 2px solid white;
     color: white;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     cursor: pointer;
     font-size: 1.5rem;
@@ -113,17 +135,48 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
 .restart-btn-overlay:hover,
 .restart-btn-overlay:focus {
-    background: rgba(33, 150, 243, 0.9);
-    transform: scale(1.1) rotate(180deg);
+    background: #2ecc71;
+    transform: rotate(180deg);
 }
 
 .restart-btn-overlay:active {
     transform: scale(1) rotate(180deg);
+}
+
+.fullscreen-btn-overlay {
+    position: fixed;
+    top: 1rem;
+    left: 8rem; /* Placed next to restart button */
+    background: var(--tk-cyan);
+    border: 2px solid white;
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.5rem;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.fullscreen-btn-overlay:hover,
+.fullscreen-btn-overlay:focus {
+    background: #2980b9;
+    transform: scale(1.1);
+}
+
+.fullscreen-btn-overlay:active {
+    transform: scale(1);
 }
 
 .restart-icon {

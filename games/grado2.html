@@ -14,6 +14,12 @@
         
         <!-- Back button overlayed -->
         <button class="back-btn-overlay" onclick="goBack()" title="Volver al menú">✕</button>
+        <button class="restart-btn-overlay" onclick="location.reload()" title="Reiniciar juego">
+            <span class="restart-icon">↻</span>
+        </button>
+        <button class="fullscreen-btn-overlay" onclick="toggleFullscreen()" title="Pantalla Completa">
+            <span class="fullscreen-icon">⛶</span>
+        </button>
     </div>
     
     <script src="../js/utils.js"></script>
@@ -24,11 +30,34 @@
             const gameArea = document.getElementById('gameArea');
             const game = new GalaxyMathDefender(gameArea, {
                 difficulty: 'medium',
-                maxNumber: 50,
+                maxNumber: 20,
                 operations: ['+', '-'],
                 grade: 2
             });
+            
+            // Try auto-fullscreen
+            document.documentElement.requestFullscreen().catch(() => {});
+            
+            const enableFullscreen = () => {
+                document.documentElement.requestFullscreen().catch(() => {});
+                document.removeEventListener('click', enableFullscreen);
+                document.removeEventListener('touchstart', enableFullscreen);
+            };
+            document.addEventListener('click', enableFullscreen);
+            document.addEventListener('touchstart', enableFullscreen);
         });
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
         
         function goBack() {
             if (confirm('¿Seguro que quieres salir del juego?')) {

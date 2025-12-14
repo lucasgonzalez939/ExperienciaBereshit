@@ -628,14 +628,14 @@ class GalaxyMathDefender {
         
         // Title
         this.ctx.fillStyle = '#ff4444';
-        this.ctx.font = 'bold 48px Arial';
+        this.ctx.font = 'bold 48px "Grandstander", cursive';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText('¡Juego Terminado!', this.width / 2, this.height / 2 - 60);
         
         // Score
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '32px Arial';
+        this.ctx.font = '32px "Poppins", sans-serif';
         this.ctx.fillText(`Puntos: ${this.score}`, this.width / 2, this.height / 2);
         
         // Waves
@@ -643,7 +643,7 @@ class GalaxyMathDefender {
         
         // Restart message
         this.ctx.fillStyle = '#44ff44';
-        this.ctx.font = '24px Arial';
+        this.ctx.font = '24px "Poppins", sans-serif';
         this.ctx.fillText('Reiniciando...', this.width / 2, this.height / 2 + 100);
     }
 
@@ -679,8 +679,8 @@ class GalaxyMathDefender {
 
         // Background
         const grd = ctx.createRadialGradient(this.width / 2, 0, 50, this.width / 2, this.height, this.height);
-        grd.addColorStop(0, '#3949ab');
-        grd.addColorStop(1, '#000');
+        grd.addColorStop(0, '#2EA8D3');
+        grd.addColorStop(1, '#003F72');
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, this.width, this.height);
 
@@ -696,7 +696,7 @@ class GalaxyMathDefender {
         if (this.currentProblem) {
             ctx.save();
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.strokeStyle = '#ffeb3b';
+            ctx.strokeStyle = '#FBC812';
             ctx.lineWidth = 3;
             const boxWidth = 200;
             const boxHeight = 50;
@@ -710,8 +710,8 @@ class GalaxyMathDefender {
             ctx.stroke();
             
             // Draw problem text
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 24px "Segoe UI", sans-serif';
+            ctx.fillStyle = '#313742';
+            ctx.font = 'bold 24px "Grandstander", cursive';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(this.currentProblem.text + ' = ?', this.width / 2, boxY + boxHeight / 2);
@@ -721,7 +721,7 @@ class GalaxyMathDefender {
         // Player ship
         ctx.save();
         ctx.translate(this.player.x, this.player.y);
-        ctx.fillStyle = '#4caf50';
+        ctx.fillStyle = '#3F9C35';
         ctx.beginPath();
         ctx.moveTo(0, -20);
         ctx.lineTo(16, 12);
@@ -734,12 +734,12 @@ class GalaxyMathDefender {
         this.enemies.forEach(e => {
             ctx.save();
             ctx.translate(e.x, e.y);
-            ctx.fillStyle = '#ff5722';
+            ctx.fillStyle = '#E73C32';
             ctx.beginPath();
             ctx.ellipse(0, 0, 26, 18, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = '#fff';
-            ctx.font = 'bold 16px "Segoe UI", sans-serif';
+            ctx.font = 'bold 16px "Poppins", sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(e.value, 0, 0);

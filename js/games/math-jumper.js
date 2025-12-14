@@ -855,14 +855,14 @@ class MathJumper {
         this.ctx.fillRect(padding, questionTop, this.canvas.width - padding * 2, questionHeight);
         
         // Border
-        this.ctx.strokeStyle = '#2d3748';
+        this.ctx.strokeStyle = '#313742';
         this.ctx.lineWidth = 3;
         this.ctx.strokeRect(padding, questionTop, this.canvas.width - padding * 2, questionHeight);
         
         // Draw question text
-        this.ctx.fillStyle = '#2d3748';
+        this.ctx.fillStyle = '#313742';
         const fontSize = Math.max(18, Math.min(28, this.canvas.width / 30));
-        this.ctx.font = `bold ${fontSize}px Arial`;
+        this.ctx.font = `bold ${fontSize}px "Grandstander", cursive`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         
@@ -886,14 +886,14 @@ class MathJumper {
             // Color based on state
             if (platform.isDecorative) {
                 // Decorative lily pads - more transparent and darker
-                this.ctx.fillStyle = 'rgba(56, 142, 60, 0.5)';
+                this.ctx.fillStyle = 'rgba(63, 156, 53, 0.5)';
             } else if (platform.isStart) {
                 // Start platform - darker green
                 this.ctx.fillStyle = '#2d5016';
             } else if (platform.landed) {
-                this.ctx.fillStyle = platform.isCorrect ? '#388e3c' : '#d32f2f';
+                this.ctx.fillStyle = platform.isCorrect ? '#3F9C35' : '#E73C32';
             } else {
-                this.ctx.fillStyle = '#4caf50';
+                this.ctx.fillStyle = '#3F9C35';
             }
             this.ctx.fill();
             
@@ -925,7 +925,7 @@ class MathJumper {
             if (!platform.isStart && platform.answer) {
                 this.ctx.fillStyle = '#fff';
                 const fontSize = Math.max(16, Math.min(24, platform.radius / 3));
-                this.ctx.font = `bold ${fontSize}px Arial`;
+                this.ctx.font = `bold ${fontSize}px "Grandstander", cursive`;
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
                 this.ctx.strokeStyle = '#000';
@@ -945,13 +945,13 @@ class MathJumper {
         const centerY = this.player.y + this.player.height / 2;
         
         // Draw frog body
-        this.ctx.fillStyle = '#4caf50';
+        this.ctx.fillStyle = '#3F9C35';
         this.ctx.beginPath();
         this.ctx.arc(centerX, centerY, this.player.width / 2, 0, Math.PI * 2);
         this.ctx.fill();
         
         // Frog outline
-        this.ctx.strokeStyle = '#2e7d32';
+        this.ctx.strokeStyle = '#2d5016';
         this.ctx.lineWidth = 3;
         this.ctx.stroke();
         
@@ -990,7 +990,7 @@ class MathJumper {
         this.ctx.fill();
         
         // Smile
-        this.ctx.strokeStyle = '#2e7d32';
+        this.ctx.strokeStyle = '#2d5016';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
         this.ctx.arc(centerX, centerY + 5, 8, 0, Math.PI, false);
@@ -1008,14 +1008,14 @@ class MathJumper {
         
         // Game over text
         this.ctx.fillStyle = '#fff';
-        this.ctx.font = 'bold 48px Arial';
+        this.ctx.font = 'bold 48px "Grandstander", cursive';
         this.ctx.textAlign = 'center';
         this.ctx.fillText('¡Juego Terminado!', this.canvas.width / 2, this.canvas.height / 2 - 40);
         
-        this.ctx.font = '32px Arial';
+        this.ctx.font = '32px "Poppins", sans-serif';
         this.ctx.fillText(`Puntaje Final: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 20);
         
-        this.ctx.font = '20px Arial';
+        this.ctx.font = '20px "Poppins", sans-serif';
         this.ctx.fillStyle = '#cbd5e0';
         this.ctx.fillText('Reiniciando en 3 segundos...', this.canvas.width / 2, this.canvas.height / 2 + 70);
         

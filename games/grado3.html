@@ -16,7 +16,16 @@
     </style>
 </head>
 <body>
-    <div id="gameContainer"></div>
+    <div id="gameContainer">
+        <!-- Back button overlayed -->
+        <button class="back-btn-overlay" onclick="goBack()" title="Volver al menú">✕</button>
+        <button class="restart-btn-overlay" onclick="location.reload()" title="Reiniciar juego">
+            <span class="restart-icon">↻</span>
+        </button>
+        <button class="fullscreen-btn-overlay" onclick="toggleFullscreen()" title="Pantalla Completa">
+            <span class="fullscreen-icon">⛶</span>
+        </button>
+    </div>
     
     <script src="../js/games/calculator-challenge.js"></script>
     <script>
@@ -25,6 +34,35 @@
         const game = new CalculatorChallenge(gameContainer, {
             maxTarget: 2500
         });
+
+        // Try auto-fullscreen
+        document.addEventListener('DOMContentLoaded', () => {
+            document.documentElement.requestFullscreen().catch(() => {});
+            
+            const enableFullscreen = () => {
+                document.documentElement.requestFullscreen().catch(() => {});
+                document.removeEventListener('click', enableFullscreen);
+                document.removeEventListener('touchstart', enableFullscreen);
+            };
+            document.addEventListener('click', enableFullscreen);
+            document.addEventListener('touchstart', enableFullscreen);
+        });
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function goBack() {
+            window.location.href = '../index.html';
+        }
     </script>
 </body>
 </html>

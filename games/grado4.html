@@ -18,6 +18,9 @@
         <button class="restart-btn-overlay" onclick="restartGame()" title="Reiniciar juego">
             <span class="restart-icon">↻</span>
         </button>
+        <button class="fullscreen-btn-overlay" onclick="toggleFullscreen()" title="Pantalla Completa">
+            <span class="fullscreen-icon">⛶</span>
+        </button>
     </div>
     
     <script src="../js/utils.js"></script>
@@ -27,7 +30,30 @@
         
         document.addEventListener('DOMContentLoaded', () => {
             initGame();
+            
+            // Try auto-fullscreen
+            document.documentElement.requestFullscreen().catch(() => {});
+            
+            const enableFullscreen = () => {
+                document.documentElement.requestFullscreen().catch(() => {});
+                document.removeEventListener('click', enableFullscreen);
+                document.removeEventListener('touchstart', enableFullscreen);
+            };
+            document.addEventListener('click', enableFullscreen);
+            document.addEventListener('touchstart', enableFullscreen);
         });
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
         
         function initGame() {
             const gameArea = document.getElementById('gameArea');

@@ -1,4 +1,23 @@
 /* Experiencia Bereshit - Estilos Principales */
+@import url('https://fonts.googleapis.com/css2?family=Grandstander:wght@500;700&family=Poppins:wght@400;500;600&display=swap');
+
+:root {
+    /* TecnoKids Palette */
+    --tk-dark-grey: #313742;
+    --tk-cyan: #2EA8D3;
+    --tk-red: #E73C32;
+    
+    /* Bereshit Palette */
+    --bs-navy: #003F72;
+    --bs-green: #3F9C35;
+    --bs-orange: #FF9133;
+    --bs-pink: #EA73A1;
+    --bs-yellow: #FBC812;
+    
+    /* Neutrals */
+    --bg-neutral: #F5F7FA;
+    --card-bg: #FFFFFF;
+}
 
 * {
     margin: 0;
@@ -7,39 +26,108 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', sans-serif;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 1rem;
+    background-color: var(--bg-neutral);
+    color: var(--tk-dark-grey);
 }
 
 .container {
-    max-width: 900px;
+    max-width: 1200px;
     width: 100%;
+    margin: 0 auto;
+    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-/* Header */
+/* Header (Dual-Brand Logic) */
 header {
-    text-align: center;
-    margin-bottom: 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 2rem;
+    background-color: var(--card-bg);
+    border-bottom: 4px solid var(--bs-green);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 1rem;
+}
+
+.brand-context {
+    display: flex;
+    align-items: center;
+}
+
+.logo-bereshit {
+    height: 60px;
+    width: auto;
+}
+
+.brand-provider {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.powered-by {
+    font-size: 0.75rem;
+    color: var(--tk-dark-grey);
+    margin-bottom: 0.25rem;
+}
+
+.logo-tecnokids {
+    height: 40px;
+    width: auto;
+}
+
+/* Fullscreen Button */
+.fullscreen-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    background: var(--tk-cyan);
+    border: 2px solid white;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.fullscreen-btn:hover {
+    background: #2980b9;
+    transform: scale(1.1);
+}
+
+.fullscreen-btn:active {
+    transform: scale(0.95);
 }
 
 .main-title {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    animation: fadeInDown 0.8s ease-out;
+    font-family: 'Grandstander', cursive;
+    font-size: 2.5rem;
+    color: var(--bs-navy);
+    text-align: center;
+    margin: 2rem 0 0.5rem;
 }
 
 .subtitle {
+    font-family: 'Poppins', sans-serif;
     font-size: 1.1rem;
-    opacity: 0.95;
-    animation: fadeIn 1s ease-out 0.3s both;
+    color: var(--tk-dark-grey);
+    text-align: center;
+    margin-bottom: 3rem;
 }
 
 /* Grade Selection Grid */
@@ -48,52 +136,92 @@ header {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
     padding: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    align-content: center;
 }
 
-/* Grade Buttons */
+/* Grade Buttons (Cards) */
 .grade-btn {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 15px;
-    padding: 2rem 1.5rem;
+    background: var(--card-bg);
+    border: none;
+    border-radius: 16px;
+    padding: 1.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    color: white;
-    font-family: inherit;
-    animation: fadeInUp 0.6s ease-out both;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
 }
-
-.grade-btn:nth-child(1) { animation-delay: 0.1s; }
-.grade-btn:nth-child(2) { animation-delay: 0.2s; }
-.grade-btn:nth-child(3) { animation-delay: 0.3s; }
-.grade-btn:nth-child(4) { animation-delay: 0.4s; }
 
 .grade-btn:hover,
 .grade-btn:focus {
-    background: rgba(255, 255, 255, 0.25);
-    border-color: rgba(255, 255, 255, 0.6);
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.grade-btn:active {
-    transform: translateY(-2px) scale(1);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
 .grade-number {
-    font-size: 3rem;
-    font-weight: bold;
+    font-family: 'Grandstander', cursive;
+    font-size: 2.5rem;
+    font-weight: 700;
     line-height: 1;
+    color: var(--tk-dark-grey);
 }
 
 .grade-label {
-    font-size: 1.2rem;
-    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--tk-dark-grey);
+    text-align: center;
+}
+
+/* Badges for Grades */
+.grade-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--tk-dark-grey);
+    margin-top: 0.25rem;
+}
+
+.grade-btn[data-grade="1"] .grade-badge { background-color: var(--bs-yellow); }
+.grade-btn[data-grade="2"] .grade-badge { background-color: var(--bs-orange); }
+.grade-btn[data-grade="3"] .grade-badge { background-color: var(--bs-pink); }
+.grade-btn[data-grade="4"] .grade-badge { background-color: var(--tk-cyan); color: white; }
+
+/* Icons */
+.grade-icon {
+    font-size: 1.5rem;
+    color: var(--tk-cyan);
+    margin-bottom: 0;
+}
+
+/* Wide screens - Horizontal layout */
+@media (min-width: 1024px) {
+    .grade-selection {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        max-width: 1000px;
+    }
+    
+    .grade-btn {
+        padding: 1rem;
+    }
+    
+    .grade-number {
+        font-size: 2rem;
+    }
+    
+    .grade-icon {
+        font-size: 1.25rem;
+    }
 }
 
 /* Animations */

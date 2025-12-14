@@ -11,7 +11,7 @@
     display: block;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, #4dd0e1, #0097a7);
+    background: linear-gradient(to bottom, #2EA8D3, #003F72);
 }
 
 /* HUD Overlay */
@@ -88,12 +88,12 @@
 }
 
 .jumper-flash-overlay.jumper-flash-correct {
-    background: rgba(72, 187, 120, 0.3);
+    background: rgba(63, 156, 53, 0.3);
     opacity: 1;
 }
 
 .jumper-flash-overlay.jumper-flash-wrong {
-    background: rgba(245, 101, 101, 0.3);
+    background: rgba(231, 60, 50, 0.3);
     opacity: 1;
 }
 
