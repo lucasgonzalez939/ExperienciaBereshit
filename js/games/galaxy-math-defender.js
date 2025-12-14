@@ -66,7 +66,7 @@ class GalaxyMathDefender {
                 
                 <!-- Restart button -->
                 <button class="restart-btn-overlay" id="restartBtn" title="Reiniciar juego">
-                    <span class="restart-icon">🔄</span>
+                    <span class="restart-icon">↻</span>
                 </button>
                 
                 <!-- Controls overlayed on canvas -->

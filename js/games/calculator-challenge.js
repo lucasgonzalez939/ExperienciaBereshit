@@ -38,7 +38,7 @@ class CalculatorChallenge {
                 
                 <!-- Restart button -->
                 <button class="restart-btn-overlay" id="calcRestartBtn" title="Reiniciar juego">
-                    <span class="restart-icon">🔄</span>
+                    <span class="restart-icon">↻</span>
                 </button>
                 
                 <!-- Flash effect overlay -->
@@ -188,7 +188,8 @@ class CalculatorChallenge {
             attempts++;
             
             // Check if only one digit changed and values are valid
-        } while (!this.onlyOneDigitChanged(num1, target) && attempts < maxAttempts);
+            // Also ensure target is not negative
+        } while ((target < 0 || !this.onlyOneDigitChanged(num1, target)) && attempts < maxAttempts);
         
         // If we couldn't find a valid problem, use a simple fallback
         if (attempts >= maxAttempts) {

@@ -17,10 +17,11 @@
 
 /* HUD Overlay */
 .calc-hud-overlay {
-    position: absolute;
-    bottom: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    left: auto;
+    transform: none;
     z-index: 100;
     pointer-events: none;
 }
@@ -30,7 +31,7 @@
     flex-direction: row;
     gap: 1rem;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
 }
 
 .calc-score,
@@ -38,11 +39,12 @@
     background: rgba(0, 0, 0, 0.7);
     color: white;
     padding: 0.5rem 1rem;
-    border-radius: 1rem;
+    border-radius: 2rem; /* Match math-jumper rounded corners */
     font-size: 1rem;
     font-weight: bold;
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3); /* Match math-jumper border */
 }
 
 /* Flash Effect Overlay */
@@ -72,10 +74,10 @@
 
 /* Main Game Area */
 .calc-game-area {
-    width: 100%;
-    height: 100%;
-    max-width: 100%;
-    max-height: 100%;
+    width: 90%;
+    height: 90%;
+    max-width: 90%;
+    max-height: 90%;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -109,7 +111,7 @@
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
-    font-size: clamp(2rem, 6vw, 4rem);
+    font-size: clamp(1.8rem, 5.4vw, 3.6rem);
     font-weight: bold;
     color: #333;
     flex-wrap: wrap;
@@ -130,7 +132,7 @@
     border-radius: 0.5rem;
     color: #2d3748;
     text-align: center;
-    font-size: clamp(2rem, 6vw, 4rem);
+    font-size: clamp(1.8rem, 5.4vw, 3.6rem);
 }
 
 .calc-operator-display.calc-input-active {
@@ -147,7 +149,7 @@
     border-radius: 0.5rem;
     color: #2d3748;
     text-align: center;
-    font-size: clamp(2rem, 6vw, 4rem);
+    font-size: clamp(1.8rem, 5.4vw, 3.6rem);
 }
 
 .calc-input-display.calc-input-active {
@@ -180,7 +182,7 @@
 
 .calc-key {
     aspect-ratio: 1;
-    font-size: clamp(1rem, 3vw, 1.75rem);
+    font-size: clamp(0.9rem, 2.7vw, 1.575rem);
     font-weight: bold;
     border: none;
     border-radius: 0.75rem;
@@ -201,7 +203,7 @@
     align-items: center;
     justify-content: center;
     /* Font size relative to button size - 50% of min dimension */
-    font-size: 6.5cqi;
+    font-size: 5.8cqi;
     container-type: size;
 }
 
@@ -239,7 +241,7 @@
 
 .calc-submit-key {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    font-size: clamp(1.25rem, 3.5vw, 2rem);
+    font-size: clamp(1.125rem, 3.15vw, 1.8rem);
     aspect-ratio: auto;
     padding: 0.5rem;
     container-type: normal;
@@ -267,14 +269,14 @@
     }
     
     .calc-equation {
-        font-size: clamp(3rem, 6vw, 5rem);
+        font-size: clamp(2.7rem, 5.4vw, 4.5rem);
         gap: 1rem;
     }
     
     .calc-operator-display,
     .calc-input-display {
         min-width: 4rem;
-        font-size: clamp(3rem, 6vw, 5rem);
+        font-size: clamp(2.7rem, 5.4vw, 4.5rem);
         padding: 0.5rem 1rem;
     }
     
@@ -290,7 +292,7 @@
     }
     
     .calc-submit-key {
-        font-size: clamp(1.75rem, 2.5vw, 3rem);
+        font-size: clamp(1.575rem, 2.25vw, 2.7rem);
     }
 }
 
@@ -441,5 +443,45 @@
     .calc-streak {
         font-size: 0.7rem;
         padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Wide screens - Split layout */
+@media (min-width: 1250px) {
+    .calc-game-area {
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: center;
+        gap: 2rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .calc-problem-display,
+    .calc-keypad {
+        width: 45%;
+        flex: 0 0 45%;
+        height: 100%;
+        margin: 0;
+    }
+
+    .calc-keypad {
+        align-content: center;
+    }
+
+    .calc-problem-display {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .calc-key {
+        aspect-ratio: auto;
+        height: 5rem;
+    }
+
+    .calc-equation,
+    .calc-operator-display,
+    .calc-input-display {
+        font-size: clamp(1.5rem, 3vw, 2.5rem);
     }
 }
