@@ -249,6 +249,7 @@ class MathJumper {
     }
     
     init() {
+        this.availableQuestions = [...this.questions]; // Initialize available questions
         this.createGameHTML();
         this.setupCanvas();
         this.setupEventListeners();
@@ -278,6 +279,9 @@ class MathJumper {
                 <!-- Flash overlay for feedback -->
                 <div class="jumper-flash-overlay" id="jumperFlash"></div>
                 
+                <!-- Feedback Popup -->
+                <div class="jumper-feedback-popup" id="jumperFeedback"></div>
+
                 <!-- Instructions -->
                 <div class="jumper-instructions">
                     <p>Toca la respuesta correcta</p>
@@ -290,16 +294,35 @@ class MathJumper {
         this.canvas = document.getElementById('jumperCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.resizeCanvas();
-        window.addEventListener('resize', () => this.resizeCanvas());
+        
+        // Debounce resize to avoid too many calls
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.resizeCanvas();
+            }, 100);
+        });
     }
     
     resizeCanvas() {
+        const oldWidth = this.canvas.width;
+        const oldHeight = this.canvas.height;
+        
         this.canvas.width = this.container.clientWidth;
         this.canvas.height = this.container.clientHeight;
         
-        // Adjust player position if needed
-        if (this.player.y > this.canvas.height - 100) {
-            this.player.y = this.canvas.height - 150;
+        // If this is not the first resize and we have platforms
+        if (oldWidth > 0 && oldHeight > 0 && this.platforms && this.platforms.length > 0) {
+            const scaleX = this.canvas.width / oldWidth;
+            const scaleY = this.canvas.height / oldHeight;
+            
+            // Scale player position
+            this.player.x *= scaleX;
+            this.player.y *= scaleY;
+            
+            // Recreate platforms with new dimensions
+            this.createPlatforms();
         }
     }
     
@@ -354,8 +377,18 @@ class MathJumper {
     }
     
     generateQuestion() {
-        // Pick a random question
-        const questionData = this.questions[Math.floor(Math.random() * this.questions.length)];
+        // Refill questions if empty
+        if (!this.availableQuestions || this.availableQuestions.length === 0) {
+            this.availableQuestions = [...this.questions];
+        }
+
+        // Pick a random question from available ones
+        const randomIndex = Math.floor(Math.random() * this.availableQuestions.length);
+        const questionData = this.availableQuestions[randomIndex];
+        
+        // Remove from available to avoid repetition
+        this.availableQuestions.splice(randomIndex, 1);
+
         this.currentQuestion = JSON.parse(JSON.stringify(questionData)); // Deep copy
         
         // Store original correct answer for debugging
@@ -467,7 +500,57 @@ class MathJumper {
     update() {
         if (!this.gameRunning) return;
         
-        // Apply horizontal movement (for jump animation)
+        // Handle jump animation (Bezier curve)
+        if (this.player.isJumpingToAnswer) {
+            const now = Date.now();
+            const elapsed = now - this.player.jumpStartTime;
+            const progress = Math.min(elapsed / this.player.jumpDuration, 1);
+            
+            // Quadratic Bezier Curve: B(t) = (1-t)^2 P0 + 2(1-t)t P1 + t^2 P2
+            const t = progress;
+            const u = 1 - t;
+            const tt = t * t;
+            const uu = u * u;
+            
+            const p0x = this.player.jumpStartX;
+            const p0y = this.player.jumpStartY;
+            const p1x = this.player.jumpControlX;
+            const p1y = this.player.jumpControlY;
+            const p2x = this.player.jumpTargetX;
+            const p2y = this.player.jumpTargetY;
+            
+            this.player.x = uu * p0x + 2 * u * t * p1x + tt * p2x;
+            this.player.y = uu * p0y + 2 * u * t * p1y + tt * p2y;
+            
+            if (progress >= 1) {
+                // Animation finished
+                this.player.isJumpingToAnswer = false;
+                const platform = this.player.targetPlatform;
+                
+                if (platform.isCorrect) {
+                    // Landed on correct answer
+                    this.player.x = this.player.jumpTargetX;
+                    this.player.y = this.player.jumpTargetY;
+                    this.player.velocityY = 0;
+                    this.player.velocityX = 0;
+                    this.player.jumping = false;
+                    this.player.onPlatform = true;
+                    this.player.currentPlatform = platform;
+                } else {
+                    // Wrong answer - start falling
+                    this.player.x = this.player.jumpTargetX;
+                    this.player.y = this.player.jumpTargetY;
+                    this.player.velocityY = 5; // Initial fall speed
+                    this.player.velocityX = 0;
+                    this.player.onPlatform = false;
+                }
+            }
+            return; // Skip physics and collisions while animating
+        }
+        
+        // Normal physics update
+        
+        // Apply horizontal movement
         this.player.x += this.player.velocityX;
         
         // Keep player in bounds
@@ -482,45 +565,14 @@ class MathJumper {
             this.player.y += this.player.velocityY;
         }
         
-        // Check if jumping to answer platform (just for visual landing)
-        if (this.player.isJumpingToAnswer && this.player.targetPlatform) {
-            const platform = this.player.targetPlatform;
-            const platformCenterX = platform.x + platform.radius;
-            const platformCenterY = platform.y + platform.radius;
-            const playerCenterX = this.player.x + this.player.width / 2;
-            const playerCenterY = this.player.y + this.player.height / 2;
-            
-            const distance = Math.sqrt(
-                Math.pow(playerCenterX - platformCenterX, 2) + 
-                Math.pow(playerCenterY - platformCenterY, 2)
-            );
-            
-            // Check if close enough to platform (just for visual landing)
-            if (distance < platform.radius + 30 && this.player.velocityY > 0) {
-                this.player.isJumpingToAnswer = false;
-                this.player.velocityX = 0;
-                
-                if (platform.isCorrect) {
-                    // LAND on correct answer (visual only)
-                    this.player.y = platform.y - this.player.height + 20;
-                    this.player.velocityY = 0;
-                    this.player.jumping = false;
-                    this.player.onPlatform = true;
-                } else {
-                    // FALL through wrong answer (visual only)
-                    this.player.velocityX = 0;
-                    this.player.velocityY = Math.max(this.player.velocityY, 5);
-                }
-            }
-        }
-        
-        // Check platform collisions (lily pads are circular) - only for start platform
+        // Check platform collisions (lily pads are circular)
         this.player.onPlatform = false;
         for (let platform of this.platforms) {
-            // ONLY check collision with START platform here
-            // Answer platforms are handled in the isJumpingToAnswer block above
-            if (!platform.isStart) continue;
-            if (this.player.isJumpingToAnswer) continue; // Don't interfere when jumping to answer
+            // Skip decorative platforms
+            if (platform.isDecorative) continue;
+            
+            // Skip wrong answers (so we fall through them)
+            if (platform.isCorrect === false) continue;
             
             // Check if player lands on platform (circular collision)
             const playerCenterX = this.player.x + this.player.width / 2;
@@ -540,6 +592,11 @@ class MathJumper {
                 this.player.jumping = false;
                 this.player.onPlatform = true;
                 this.player.currentPlatform = platform;
+                
+                if (!platform.landed && !platform.isStart) {
+                    platform.landed = true;
+                    // We already checked answer on click, so just ensure visual state
+                }
                 break;
             }
         }
@@ -560,7 +617,7 @@ class MathJumper {
     checkAnswer(platform) {
         console.log('✅ Verificando respuesta:', platform.answer, '| isCorrect:', platform.isCorrect);
         if (platform.isCorrect) {
-            this.handleCorrectAnswer();
+            this.handleCorrectAnswer(platform);
         } else {
             this.handleWrongAnswer();
         }
@@ -571,34 +628,49 @@ class MathJumper {
         platform.landed = true;
         this.player.targetPlatform = platform;
         
+        // Start position
+        this.player.jumpStartX = this.player.x;
+        this.player.jumpStartY = this.player.y;
+        
+        // Target position (centered on platform)
         const platformCenterX = platform.x + platform.radius;
         const platformCenterY = platform.y + platform.radius;
+        this.player.jumpTargetX = platformCenterX - this.player.width / 2;
+        this.player.jumpTargetY = platformCenterY - this.player.height + 20; // Adjust for landing position
         
-        // Calculate trajectory
-        const targetX = platformCenterX - this.player.width / 2;
-        const targetY = platformCenterY - this.player.height / 2;
+        // Control point for Bezier curve (arc)
+        // Midpoint X, and higher than both start and end Y
+        const midX = (this.player.jumpStartX + this.player.jumpTargetX) / 2;
+        const minY = Math.min(this.player.jumpStartY, this.player.jumpTargetY);
+        const jumpHeight = 150; // Height of the jump arc
+        this.player.jumpControlX = midX;
+        this.player.jumpControlY = minY - jumpHeight;
         
-        // Set velocities for arc jump
-        const dx = targetX - this.player.x;
-        const distance = Math.sqrt(dx * dx);
-        const duration = 20; // frames for horizontal movement
+        // Animation parameters
+        this.player.jumpStartTime = Date.now();
+        this.player.jumpDuration = 800; // ms
         
-        this.player.velocityX = dx / duration;
-        this.player.velocityY = this.jumpStrength;
         this.player.jumping = true;
         this.player.isJumpingToAnswer = true;
+        this.player.onPlatform = false;
+        
+        // Disable physics velocities during animation
+        this.player.velocityX = 0;
+        this.player.velocityY = 0;
     }
     
-    handleCorrectAnswer() {
+    handleCorrectAnswer(platform) {
         this.score += 10;
         this.updateHUD();
         this.triggerFlash('correct');
+        this.showFeedback('correct');
         
         // Stop the player completely - NO celebration jump
         this.player.velocityY = 0;
         this.player.velocityX = 0;
         this.player.jumping = false;
         this.player.onPlatform = true;
+        if (platform) this.player.currentPlatform = platform;
         
         setTimeout(() => {
             this.nextQuestion();
@@ -609,6 +681,7 @@ class MathJumper {
         this.lives--;
         this.updateHUD();
         this.triggerFlash('wrong');
+        this.showFeedback('wrong');
         
         if (this.lives <= 0) {
             this.gameOver();
@@ -624,6 +697,7 @@ class MathJumper {
         this.lives--;
         this.updateHUD();
         this.triggerFlash('wrong');
+        this.showFeedback('wrong');
         
         if (this.lives <= 0) {
             this.gameOver();
@@ -702,6 +776,32 @@ class MathJumper {
         setTimeout(() => {
             flashElement.className = 'jumper-flash-overlay';
         }, 600);
+    }
+
+    showFeedback(type) {
+        const feedbackElement = document.getElementById('jumperFeedback');
+        if (!feedbackElement) return;
+        
+        const correctMessages = ["¡Excelente!", "¡Muy bien!", "¡Correcto!", "¡Genial!", "¡Fantástico!"];
+        const wrongMessages = ["¡Inténtalo de nuevo!", "¡Casi!", "¡Sigue intentando!", "¡Tú puedes!", "¡No te rindas!"];
+        
+        let message = "";
+        if (type === 'correct') {
+            message = correctMessages[Math.floor(Math.random() * correctMessages.length)];
+            feedbackElement.className = 'jumper-feedback-popup jumper-feedback-correct';
+        } else {
+            message = wrongMessages[Math.floor(Math.random() * wrongMessages.length)];
+            feedbackElement.className = 'jumper-feedback-popup jumper-feedback-wrong';
+        }
+        
+        feedbackElement.textContent = message;
+        feedbackElement.style.opacity = '1';
+        feedbackElement.style.transform = 'translate(-50%, -50%) scale(1)';
+        
+        setTimeout(() => {
+            feedbackElement.style.opacity = '0';
+            feedbackElement.style.transform = 'translate(-50%, -50%) scale(0.8)';
+        }, 1500);
     }
     
     draw() {

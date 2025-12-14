@@ -9,21 +9,41 @@
 </head>
 <body>
     <div class="game-container">
-        <header class="game-header">
-            <button class="back-btn" onclick="goBack()">← Volver</button>
-            <h1 class="game-title">Cuarto Grado - Saltador Matemático</h1>
-        </header>
-        
         <div class="game-content" id="gameArea">
             <!-- Game will be rendered here by JavaScript -->
         </div>
+        
+        <!-- Overlay buttons -->
+        <button class="back-btn-overlay" onclick="goBack()" title="Volver al menú">✕</button>
+        <button class="restart-btn-overlay" onclick="restartGame()" title="Reiniciar juego">
+            <span class="restart-icon">↻</span>
+        </button>
     </div>
     
     <script src="../js/utils.js"></script>
     <script src="../js/games/math-jumper.js"></script>
     <script>
+        let currentGame;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initGame();
+        });
+        
+        function initGame() {
+            const gameArea = document.getElementById('gameArea');
+            currentGame = new MathJumper(gameArea);
+        }
+        
+        function restartGame() {
+            if (confirm('¿Seguro que quieres reiniciar el juego?')) {
+                initGame();
+            }
+        }
+        
         function goBack() {
-            window.location.href = '../index.html';
+            if (confirm('¿Seguro que quieres salir del juego?')) {
+                window.location.href = '../index.html';
+            }
         }
     </script>
 </body>
