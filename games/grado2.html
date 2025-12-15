@@ -35,29 +35,11 @@
                 grade: 2
             });
             
-            // Try auto-fullscreen
-            document.documentElement.requestFullscreen().catch(() => {});
-            
-            const enableFullscreen = () => {
-                document.documentElement.requestFullscreen().catch(() => {});
-                document.removeEventListener('click', enableFullscreen);
-                document.removeEventListener('touchstart', enableFullscreen);
-            };
-            document.addEventListener('click', enableFullscreen);
-            document.addEventListener('touchstart', enableFullscreen);
-        });
-        
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+            // Try auto-fullscreen using robust utility
+            if (typeof setupAutoFullscreen === 'function') {
+                setupAutoFullscreen();
             }
-        }
+        });
         
         function goBack() {
             if (confirm('¿Seguro que quieres salir del juego?')) {

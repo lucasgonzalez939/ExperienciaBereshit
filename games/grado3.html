@@ -27,6 +27,7 @@
         </button>
     </div>
     
+    <script src="../js/utils.js"></script>
     <script src="../js/games/calculator-challenge.js"></script>
     <script>
         // Initialize the Calculator Challenge game
@@ -37,28 +38,10 @@
 
         // Try auto-fullscreen
         document.addEventListener('DOMContentLoaded', () => {
-            document.documentElement.requestFullscreen().catch(() => {});
-            
-            const enableFullscreen = () => {
-                document.documentElement.requestFullscreen().catch(() => {});
-                document.removeEventListener('click', enableFullscreen);
-                document.removeEventListener('touchstart', enableFullscreen);
-            };
-            document.addEventListener('click', enableFullscreen);
-            document.addEventListener('touchstart', enableFullscreen);
-        });
-        
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+            if (typeof setupAutoFullscreen === 'function') {
+                setupAutoFullscreen();
             }
-        }
+        });
 
         function goBack() {
             window.location.href = '../index.html';
