@@ -627,7 +627,7 @@ class GalaxyMathDefender {
         this.ctx.fillRect(0, 0, this.width, this.height);
         
         // Title
-        this.ctx.fillStyle = '#ff4444';
+        this.ctx.fillStyle = '#E73C32';
         this.ctx.font = 'bold 48px "Grandstander", cursive';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
@@ -642,7 +642,7 @@ class GalaxyMathDefender {
         this.ctx.fillText(`Oleadas: ${this.wave - 1}`, this.width / 2, this.height / 2 + 40);
         
         // Restart message
-        this.ctx.fillStyle = '#44ff44';
+        this.ctx.fillStyle = '#3F9C35';
         this.ctx.font = '24px "Poppins", sans-serif';
         this.ctx.fillText('Reiniciando...', this.width / 2, this.height / 2 + 100);
     }
@@ -696,7 +696,7 @@ class GalaxyMathDefender {
         if (this.currentProblem) {
             ctx.save();
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.strokeStyle = '#FBC812';
+            ctx.strokeStyle = '#FF9133';
             ctx.lineWidth = 3;
             const boxWidth = 200;
             const boxHeight = 50;

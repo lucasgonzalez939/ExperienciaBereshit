@@ -810,8 +810,8 @@ class MathJumper {
         
         // Draw water background with animated waves
         const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-        gradient.addColorStop(0, '#4dd0e1');
-        gradient.addColorStop(1, '#0097a7');
+        gradient.addColorStop(0, '#2EA8D3');
+        gradient.addColorStop(1, '#003F72');
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
